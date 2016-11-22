@@ -1,0 +1,47 @@
+﻿<h1 id="getting-started">Getting Started</h1>
+<h2 id="add-the-app-store-nuget-feed-to-visual-studio">Add the App Store NuGet Feed to Visual Studio</h2>
+<p>The project contains a <code>NuGet.Config</code> file that enables this project to use the App Store's NuGet package source automatically.</p>
+<p>To enable the package source in all Visual Studio projects, follow these steps:</p>
+<ol>
+<li>Open the <code>Tools &gt; NuGet Package Manager &gt; Package Manager Settings</code> item in the menu.</li>
+<li>Add a package source that points to <code>https://appstore.intelligentplant.com/NuGet/nuget</code>.</li>
+</ol>
+<h2 id="register-your-application-with-the-app-store">Register Your Application with the App Store</h2>
+<p>Visit the <a href="https://appstore.intelligentplant.com/Developer/Home">App Store developer home page</a> to register your application.</p>
+<p>Register the <code>/signin-ip</code> route as an authorized redirect URL for the application.  This will allow the App Store to authenticate sign in requests made by your application.  For example, if the base URL for your application is <code>http://localhost:12345</code>, you should add <code>http://localhost:12345/signin-ip</code> as an authorized redirect URL.</p>
+<h2 id="update-web.config">Update Web.config</h2>
+<p>Open <code>Web.config</code> and update the <code>appStore:clientId</code> and <code>appStore:clientSecret</code> settings in the <code>appSettings</code> section to use the application ID and application secret generated when you registered the application with the App Store.</p>
+<h2 id="run-your-application">Run Your Application</h2>
+<p>Press F5 to compile and run the application.</p>
+<p>You should be redirected to the App Store to sign in and then presented with the App Store consent screen for the application.  Select the data sources that the application will be authorized to access.</p>
+<p>Once you have been granted consent, you will be redirected back to your application.  You will see JSON that describes who you are, as well as details about the data sources that you granted the application consent to access.</p>
+<p>For example:</p>
+<pre><code>{
+  &quot;AuthenticationType&quot;: &quot;ApplicationCookie&quot;,
+  &quot;UserName&quot;: &quot;a.person@myorganisation.com&quot;,
+  &quot;DataCoreUrl&quot;: &quot;https://appstore.intelligentplant.com/gestalt&quot;,
+  &quot;DataSources&quot;: [
+    {
+      &quot;Name&quot;: &quot;MyHistorian&quot;,
+      &quot;Namespace&quot;: &quot;29814739C35945AB1E1E69611B003505E0959175892D8168D9DB3D15A8917F0B&quot;,
+      &quot;QualifiedName&quot;: &quot;29814739C35945AB1E1E69611B003505E0959175892D8168D9DB3D15A8917F0B.MyHistorian&quot;,
+      &quot;DisplayName&quot;: &quot;MyHistorian (App Store Connect - A Person)&quot;
+    }
+  ]
+}
+</code></pre>
+<h2 id="using-local-data-core-and-windows-authentication">Using Local Data Core and Windows Authentication</h2>
+<p>If your application will run on an isolated network that cannot access the App Store, you can disable App Store mode and configure your application to connect to a local Data Core or Gestalt instead, using Windows authentication:</p>
+<ol>
+<li>In the Visual Studio properties for the project, enable Windows authentication.</li>
+<li>In <code>Web.config</code>, set the <code>application:useAppStore</code> setting in the <code>appSettings</code> section to <code>false</code>.</li>
+<li>In <code>Web.config</code>, set the <code>dataCore:endpoint</code> setting in the <code>appSettings</code> section to the local Data Core or Gestalt URL that you want to query, e.g. <code>http://myserver/gestalt</code>.</li>
+</ol>
+<p>If you are running the application in IIS instead of IIS Express, you must use IIS Manager to enable Windows authentication for the application.  If you are running the application in IIS and you want to call Data Core using the authenticated caller's credentials, you can enable impersonation using IIS Manager.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>You can use the static <code>Startup.AppStoreMode</code> property throughout your application to determine if you are running in App Store mode or not (e.g. to decide if you want to make an App Store API call to bill the user).</li>
+<li>To persist OAuth access tokens, create your own implementation of the <code>IOAuthTokenStore</code> interface and replace the <code>IOAuthTokenStore</code> registration at the start of <code>ConfigureAppStoreAuthentication</code> in <code>Startup.Auth.cs</code>.</li>
+<li>When running in App Store mode, the Intelligent Plant login provider middleware is used to automatically handle sign-in and sign-out requests.  You can remove this middleware registration in <code>Startup.Auth.cs</code> if you intend to use ASP.NET Identity to manage user accounts for your application.</li>
+<li>By default, session cookies are not persisted between browser sessions when using the Intelligent Plant login manager middleware.  You can change this behaviour in <code>Startup.Auth.cs</code>.</li>
+</ul>
